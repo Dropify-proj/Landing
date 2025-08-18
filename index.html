@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropify - Scan Receipts, Earn Rewards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #00B4DB 0%, #8A2BE2 100%);
+        }
+        .secondary-gradient {
+            background: linear-gradient(135deg, #8A2BE2 0%, #4c1d95 100%);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #00B4DB 0%, #0083B0 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 172, 219, 0.3);
+        }
+        .card-bg {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-bg {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #00B4DB;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold tracking-tighter">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">Dropify</span>
+            </h1>
+            <nav class="hidden md:flex space-x-8 items-center">
+                <a href="#how-it-works" class="hover:text-cyan-400 transition-colors">How It Works</a>
+                <a href="#features" class="hover:text-cyan-400 transition-colors">Features</a>
+                <a href="#rewards" class="hover:text-cyan-400 transition-colors">Rewards</a>
+            </nav>
+            <button id="connect-wallet-btn-header" class="hidden md:block bg-gray-800 border border-cyan-400 text-white py-2 px-6 rounded-lg hover:bg-cyan-400 hover:text-gray-900 transition-all">
+                Connect
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-gradient pt-32 pb-20 text-center">
+            <div class="container mx-auto px-6">
+                <h2 class="text-5xl md:text-7xl font-extrabold leading-tight mb-4">Turn Receipts into Rewards.</h2>
+                <p class="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-8">
+                    Simply scan any receipt, verify its authenticity, and get rewarded with $DROP tokens. The more you spend, the more you earn.
+                </p>
+                <button id="get-started-btn" class="btn-gradient text-white font-bold py-4 px-10 rounded-lg text-lg shadow-lg">
+                    Get Started Now
+                </button>
+            </div>
+        </section>
+
+        <!-- Main App Section -->
+        <section id="app" class="py-20 bg-gray-900">
+            <div class="container mx-auto px-6 text-center">
+                <div id="onboarding" class="max-w-xl mx-auto">
+                    <h3 class="text-3xl font-bold mb-6">Connect to Begin</h3>
+                    <p class="text-gray-400 mb-8">Connect your wallet or sign in with email to start earning.</p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button id="connect-wallet-btn-main" class="secondary-gradient text-white font-bold py-4 px-8 rounded-lg w-full sm:w-auto flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"></path></svg>
+                            Connect with Wallet
+                        </button>
+                         <button id="connect-email-btn-main" class="bg-gray-700 text-white font-bold py-4 px-8 rounded-lg w-full sm:w-auto flex items-center justify-center gap-2 hover:bg-gray-600 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            Sign in with Email
+                        </button>
+                    </div>
+                </div>
+
+                <div id="upload-section" class="hidden max-w-2xl mx-auto">
+                    <h3 class="text-3xl font-bold mb-2">Upload Your Receipt</h3>
+                    <p class="text-gray-400 mb-8">Use your camera or upload an image from your device.</p>
+                    <div class="card-bg p-8 rounded-2xl border-2 border-dashed border-gray-600 hover:border-cyan-400 transition-all">
+                        <input type="file" id="receipt-upload" class="hidden" accept="image/*" capture="environment">
+                        <label for="receipt-upload" class="cursor-pointer flex flex-col items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400 mb-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <p class="font-semibold text-lg">Click to upload or use camera</p>
+                            <p class="text-gray-400">PNG, JPG, or GIF up to 10MB</p>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="processing-section" class="hidden max-w-xl mx-auto">
+                     <div class="loader mx-auto mb-6"></div>
+                     <h3 class="text-2xl font-bold mb-2">Processing Receipt...</h3>
+                     <p class="text-gray-400">Scanning items, verifying authenticity, and calculating your rewards. This may take a moment.</p>
+                </div>
+
+                <div id="results-section" class="hidden max-w-2xl mx-auto">
+                    <div class="card-bg p-8 rounded-2xl text-left">
+                        <h3 class="text-3xl font-bold mb-6 text-center text-cyan-400">Success! Tokens Minted.</h3>
+                        <div class="border-t border-gray-700 pt-4">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-400">Total Spent:</span>
+                                <span id="total-spent" class="font-mono text-lg">$142.78</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-400">Mint Rate:</span>
+                                <span class="font-mono text-lg">1 $DROP / $1</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3 mt-2 border-t border-cyan-500/50">
+                                <span class="font-bold text-xl">$DROP Minted:</span>
+                                <span id="tokens-minted" class="font-mono font-bold text-2xl text-cyan-400">142.78 $DROP</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-4 text-center">Your tokens have been sent to your connected wallet.</p>
+                    </div>
+                     <div class="mt-8 text-center">
+                        <button id="burn-tokens-btn" class="secondary-gradient text-white font-bold py-3 px-8 rounded-lg">Burn Tokens for Rewards</button>
+                        <button id="scan-another-btn" class="bg-gray-700 text-white py-3 px-8 rounded-lg ml-4">Scan Another</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold">A Simple, Rewarding Process</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto mt-4">In just three easy steps, you can turn everyday purchases into valuable crypto rewards.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <!-- Step 1 -->
+                    <div class="card-bg p-8 rounded-2xl">
+                        <div class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-cyan-300 mb-4">1</div>
+                        <h3 class="text-2xl font-semibold mb-2">Connect</h3>
+                        <p class="text-gray-400">Securely connect your crypto wallet or sign in with your email. Your account is created instantly.</p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="card-bg p-8 rounded-2xl">
+                        <div class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-cyan-300 mb-4">2</div>
+                        <h3 class="text-2xl font-semibold mb-2">Scan & Upload</h3>
+                        <p class="text-gray-400">Use your phone's camera to snap a picture of your receipt, or upload an existing image.</p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="card-bg p-8 rounded-2xl">
+                        <div class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-cyan-300 mb-4">3</div>
+                        <h3 class="text-2xl font-semibold mb-2">Earn $DROP</h3>
+                        <p class="text-gray-400">Our AI verifies the receipt and mints $DROP tokens directly to your wallet based on your purchase total.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-20 bg-gray-900">
+            <div class="container mx-auto px-6">
+                 <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold">Powered by Cutting-Edge Tech</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto mt-4">We leverage AI and blockchain to create a seamless and secure rewards ecosystem.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 bg-cyan-500/10 p-3 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg></div>
+                            <div>
+                                <h4 class="font-semibold text-xl">Decentralized & Secure</h4>
+                                <p class="text-gray-400">Built on the blockchain for maximum transparency and security. You own your data and your tokens.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 bg-cyan-500/10 p-3 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div>
+                            <div>
+                                <h4 class="font-semibold text-xl">AI-Powered Verification</h4>
+                                <p class="text-gray-400">Our advanced OCR and AI models scan, digitize, and verify every receipt to prevent fraud and ensure fair rewards.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                             <div class="flex-shrink-0 bg-cyan-500/10 p-3 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 17.66l-1.41 1.41"></path><path d="M19.07 4.93l-1.41 1.41"></path></svg></div>
+                            <div>
+                                <h4 class="font-semibold text-xl">Instant Token Minting</h4>
+                                <p class="text-gray-400">No waiting periods. As soon as your receipt is verified, $DROP tokens are minted and sent to your wallet.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <img src="https://placehold.co/600x500/8A2BE2/00B4DB?text=Receipt+Verification+UI" alt="Receipt Verification UI" class="rounded-2xl shadow-2xl shadow-purple-500/20">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rewards Section -->
+        <section id="rewards" class="py-20">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-4xl font-bold mb-4">Burn Tokens. Claim Rewards.</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto mb-12">Your $DROP tokens are keys to a world of exclusive rewards. Burn them to claim gift cards, discounts, exclusive NFTs, and more.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Reward Card 1 -->
+                    <div class="card-bg rounded-2xl overflow-hidden group">
+                        <img src="https://placehold.co/400x250/00B4DB/FFFFFF?text=Amazon+Gift+Card" alt="Amazon Gift Card" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">$25 Amazon Gift Card</h3>
+                            <p class="text-gray-400 mb-4">The everything store, at your fingertips.</p>
+                            <button class="w-full secondary-gradient text-white font-bold py-3 rounded-lg">Burn 2500 $DROP</button>
+                        </div>
+                    </div>
+                    <!-- Reward Card 2 -->
+                    <div class="card-bg rounded-2xl overflow-hidden group">
+                        <img src="https://placehold.co/400x250/8A2BE2/FFFFFF?text=Exclusive+NFT" alt="Exclusive NFT" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Limited Edition NFT</h3>
+                            <p class="text-gray-400 mb-4">A unique, collectible digital asset for our top earners.</p>
+                            <button class="w-full secondary-gradient text-white font-bold py-3 rounded-lg">Burn 10000 $DROP</button>
+                        </div>
+                    </div>
+                    <!-- Reward Card 3 -->
+                    <div class="card-bg rounded-2xl overflow-hidden group">
+                        <img src="https://placehold.co/400x250/333333/FFFFFF?text=Starbucks+Coffee" alt="Starbucks Coffee" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">$10 Starbucks Credit</h3>
+                            <p class="text-gray-400 mb-4">Fuel your day with your favorite coffee.</p>
+                            <button class="w-full secondary-gradient text-white font-bold py-3 rounded-lg">Burn 1000 $DROP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900/50 border-t border-gray-800 py-12">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <h3 class="text-2xl font-bold text-white mb-2">
+                 <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">Dropify</span>
+            </h3>
+            <p class="mb-6">Turning everyday spending into future value.</p>
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#" class="hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.3 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a>
+                <a href="#" class="hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a>
+                <a href="#" class="hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
+            </div>
+            <p>&copy; 2024 Dropify. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Connection Modal -->
+    <div id="connect-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg">
+        <div class="card-bg rounded-2xl p-8 max-w-sm w-full m-4 relative">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 class="text-2xl font-bold text-center mb-6">Connect to Dropify</h3>
+            <div class="space-y-4">
+                 <button class="w-full secondary-gradient text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"></path></svg>
+                    WalletConnect
+                </button>
+                 <button class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-3 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    Sign in with Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element Selectors ---
+            const connectModal = document.getElementById('connect-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const connectWalletHeaderBtn = document.getElementById('connect-wallet-btn-header');
+            const getStartedBtn = document.getElementById('get-started-btn');
+            const connectWalletMainBtn = document.getElementById('connect-wallet-btn-main');
+            const connectEmailMainBtn = document.getElementById('connect-email-btn-main');
+            const appSection = document.getElementById('app');
+
+            const onboardingSection = document.getElementById('onboarding');
+            const uploadSection = document.getElementById('upload-section');
+            const processingSection = document.getElementById('processing-section');
+            const resultsSection = document.getElementById('results-section');
+            const receiptUploadInput = document.getElementById('receipt-upload');
+            const scanAnotherBtn = document.getElementById('scan-another-btn');
+            
+            // --- Modal Logic ---
+            const openModal = () => connectModal.classList.remove('hidden');
+            const closeModal = () => connectModal.classList.add('hidden');
+
+            [connectWalletHeaderBtn, getStartedBtn, connectWalletMainBtn, connectEmailMainBtn].forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // For demo, any connect button will "log in" the user
+                    // In a real app, this would trigger WalletConnect or an email auth flow
+                    if (btn === getStartedBtn) {
+                        appSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        // Simulate connection
+                        showUploadState();
+                    }
+                });
+            });
+
+            // This is just for the modal example, not tied to the main flow
+            const modalButtons = connectModal.querySelectorAll('button');
+            modalButtons.forEach(btn => btn.addEventListener('click', closeModal));
+            closeModalBtn.addEventListener('click', closeModal);
+            connectModal.addEventListener('click', (e) => {
+                if (e.target === connectModal) closeModal();
+            });
+
+            // --- App State Logic ---
+            const showOnboardingState = () => {
+                onboardingSection.classList.remove('hidden');
+                uploadSection.classList.add('hidden');
+                processingSection.classList.add('hidden');
+                resultsSection.classList.add('hidden');
+            };
+            
+            const showUploadState = () => {
+                onboardingSection.classList.add('hidden');
+                uploadSection.classList.remove('hidden');
+                processingSection.classList.add('hidden');
+                resultsSection.classList.add('hidden');
+            };
+            
+            const showProcessingState = () => {
+                onboardingSection.classList.add('hidden');
+                uploadSection.classList.add('hidden');
+                processingSection.classList.remove('hidden');
+                resultsSection.classList.add('hidden');
+            };
+
+            const showResultsState = () => {
+                onboardingSection.classList.add('hidden');
+                uploadSection.classList.add('hidden');
+                processingSection.classList.add('hidden');
+                resultsSection.classList.remove('hidden');
+            };
+
+            // --- Event Listeners ---
+            receiptUploadInput.addEventListener('change', () => {
+                if (receiptUploadInput.files.length > 0) {
+                    showProcessingState();
+                    // Simulate API call for verification and minting
+                    setTimeout(() => {
+                        showResultsState();
+                    }, 3000); // 3-second delay
+                }
+            });
+
+            scanAnotherBtn.addEventListener('click', () => {
+                receiptUploadInput.value = ''; // Reset file input
+                showUploadState();
+            });
+            
+            // Smooth scrolling for nav links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if(targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
