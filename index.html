@@ -6,6 +6,11 @@
     <title>Dropify - Scan Receipts, Earn Rewards</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Web3Modal and Ethers.js for WalletConnect -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/web3modal@1.9.9/dist/index.js"></script>
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -61,9 +66,17 @@
                 <a href="#features" class="hover:text-cyan-400 transition-colors">Features</a>
                 <a href="#rewards" class="hover:text-cyan-400 transition-colors">Rewards</a>
             </nav>
-            <button id="connect-wallet-btn-header" class="hidden md:block bg-gray-800 border border-cyan-400 text-white py-2 px-6 rounded-lg hover:bg-cyan-400 hover:text-gray-900 transition-all">
-                Connect
-            </button>
+            <div id="header-connect-section">
+                 <button id="connect-wallet-btn-header" class="hidden md:block bg-gray-800 border border-cyan-400 text-white py-2 px-6 rounded-lg hover:bg-cyan-400 hover:text-gray-900 transition-all">
+                    Connect
+                </button>
+            </div>
+            <div id="header-user-section" class="hidden items-center gap-3">
+                <span id="user-identifier" class="font-mono text-sm bg-gray-800 px-3 py-1 rounded-md"></span>
+                <button id="disconnect-btn" class="text-red-500 hover:text-red-400 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -85,16 +98,27 @@
         <section id="app" class="py-20 bg-gray-900">
             <div class="container mx-auto px-6 text-center">
                 <div id="onboarding" class="max-w-xl mx-auto">
-                    <h3 class="text-3xl font-bold mb-6">Connect to Begin</h3>
-                    <p class="text-gray-400 mb-8">Connect your wallet or sign in with email to start earning.</p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button id="connect-wallet-btn-main" class="secondary-gradient text-white font-bold py-4 px-8 rounded-lg w-full sm:w-auto flex items-center justify-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"></path></svg>
-                            Connect with Wallet
-                        </button>
-                         <button id="connect-email-btn-main" class="bg-gray-700 text-white font-bold py-4 px-8 rounded-lg w-full sm:w-auto flex items-center justify-center gap-2 hover:bg-gray-600 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                            Sign in with Email
+                    <!-- This view shows for new/logged-out users -->
+                    <div id="connect-view">
+                        <h3 class="text-3xl font-bold mb-6">Connect to Begin</h3>
+                        <p class="text-gray-400 mb-8">Connect your wallet or sign in with email to start earning.</p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button id="connect-wallet-btn-main" class="secondary-gradient text-white font-bold py-4 px-8 rounded-lg w-full sm:w-auto flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"></path></svg>
+                                Connect with Wallet
+                            </button>
+                             <button id="connect-email-btn-main" class="bg-gray-700 text-white font-bold py-4 px-8 rounded-lg w-full sm:w-auto flex items-center justify-center gap-2 hover:bg-gray-600 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                Sign in with Email
+                            </button>
+                        </div>
+                    </div>
+                    <!-- This view shows for logged-in users -->
+                    <div id="welcome-back-view" class="hidden">
+                        <h3 class="text-3xl font-bold mb-6">Welcome Back!</h3>
+                        <p class="text-gray-400 mb-8">You're already signed in. Continue to the app to scan your next receipt.</p>
+                        <button id="continue-btn" class="btn-gradient text-white font-bold py-4 px-10 rounded-lg text-lg shadow-lg">
+                            Continue to App
                         </button>
                     </div>
                 </div>
@@ -114,8 +138,8 @@
 
                 <div id="processing-section" class="hidden max-w-xl mx-auto">
                      <div class="loader mx-auto mb-6"></div>
-                     <h3 class="text-2xl font-bold mb-2">Processing Receipt...</h3>
-                     <p class="text-gray-400">Scanning items, verifying authenticity, and calculating your rewards. This may take a moment.</p>
+                     <h3 id="processing-title" class="text-2xl font-bold mb-2">Processing Receipt...</h3>
+                     <p id="processing-text" class="text-gray-400">Scanning items, verifying authenticity, and calculating your rewards. This may take a moment.</p>
                 </div>
 
                 <div id="results-section" class="hidden max-w-2xl mx-auto">
@@ -135,10 +159,10 @@
                                 <span id="tokens-minted" class="font-mono font-bold text-2xl text-cyan-400">142.78 $DROP</span>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-4 text-center">Your tokens have been sent to your connected wallet.</p>
+                        <p class="text-xs text-gray-500 mt-4 text-center">Your tokens have been sent to your connected wallet. View on <a id="explorer-link" href="#" target="_blank" class="text-cyan-400 underline">Explorer</a></p>
                     </div>
                      <div class="mt-8 text-center">
-                        <button id="burn-tokens-btn" class="secondary-gradient text-white font-bold py-3 px-8 rounded-lg">Burn Tokens for Rewards</button>
+                        <a href="#rewards" id="go-to-rewards-btn" class="secondary-gradient text-white font-bold py-3 px-8 rounded-lg">Browse Rewards</a>
                         <button id="scan-another-btn" class="bg-gray-700 text-white py-3 px-8 rounded-lg ml-4">Scan Another</button>
                     </div>
                 </div>
@@ -146,7 +170,7 @@
         </section>
 
 
-        <!-- How It Works Section -->
+        <!-- How It Works, Features, Rewards Sections remain the same -->
         <section id="how-it-works" class="py-20">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
@@ -154,19 +178,16 @@
                     <p class="text-gray-400 max-w-2xl mx-auto mt-4">In just three easy steps, you can turn everyday purchases into valuable crypto rewards.</p>
                 </div>
                 <div class="grid md:grid-cols-3 gap-8 text-center">
-                    <!-- Step 1 -->
                     <div class="card-bg p-8 rounded-2xl">
                         <div class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-cyan-300 mb-4">1</div>
                         <h3 class="text-2xl font-semibold mb-2">Connect</h3>
                         <p class="text-gray-400">Securely connect your crypto wallet or sign in with your email. Your account is created instantly.</p>
                     </div>
-                    <!-- Step 2 -->
                     <div class="card-bg p-8 rounded-2xl">
                         <div class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-cyan-300 mb-4">2</div>
                         <h3 class="text-2xl font-semibold mb-2">Scan & Upload</h3>
                         <p class="text-gray-400">Use your phone's camera to snap a picture of your receipt, or upload an existing image.</p>
                     </div>
-                    <!-- Step 3 -->
                     <div class="card-bg p-8 rounded-2xl">
                         <div class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-cyan-500 to-cyan-300 mb-4">3</div>
                         <h3 class="text-2xl font-semibold mb-2">Earn $DROP</h3>
@@ -175,10 +196,8 @@
                 </div>
             </div>
         </section>
-
-        <!-- Features Section -->
         <section id="features" class="py-20 bg-gray-900">
-            <div class="container mx-auto px-6">
+             <div class="container mx-auto px-6">
                  <div class="text-center mb-12">
                     <h2 class="text-4xl font-bold">Powered by Cutting-Edge Tech</h2>
                     <p class="text-gray-400 max-w-2xl mx-auto mt-4">We leverage AI and blockchain to create a seamless and secure rewards ecosystem.</p>
@@ -187,34 +206,21 @@
                     <div class="space-y-6">
                         <div class="flex items-start gap-4">
                             <div class="flex-shrink-0 bg-cyan-500/10 p-3 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg></div>
-                            <div>
-                                <h4 class="font-semibold text-xl">Decentralized & Secure</h4>
-                                <p class="text-gray-400">Built on the blockchain for maximum transparency and security. You own your data and your tokens.</p>
-                            </div>
+                            <div><h4 class="font-semibold text-xl">Decentralized & Secure</h4><p class="text-gray-400">Built on the Supra L1 for maximum speed, transparency, and security. You own your data and your tokens.</p></div>
                         </div>
                         <div class="flex items-start gap-4">
                             <div class="flex-shrink-0 bg-cyan-500/10 p-3 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></div>
-                            <div>
-                                <h4 class="font-semibold text-xl">AI-Powered Verification</h4>
-                                <p class="text-gray-400">Our advanced OCR and AI models scan, digitize, and verify every receipt to prevent fraud and ensure fair rewards.</p>
-                            </div>
+                            <div><h4 class="font-semibold text-xl">AI-Powered Verification</h4><p class="text-gray-400">Our advanced OCR and AI models scan, digitize, and verify every receipt to prevent fraud and ensure fair rewards.</p></div>
                         </div>
                         <div class="flex items-start gap-4">
                              <div class="flex-shrink-0 bg-cyan-500/10 p-3 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 17.66l-1.41 1.41"></path><path d="M19.07 4.93l-1.41 1.41"></path></svg></div>
-                            <div>
-                                <h4 class="font-semibold text-xl">Instant Token Minting</h4>
-                                <p class="text-gray-400">No waiting periods. As soon as your receipt is verified, $DROP tokens are minted and sent to your wallet.</p>
-                            </div>
+                            <div><h4 class="font-semibold text-xl">Instant Token Minting</h4><p class="text-gray-400">No waiting periods. As soon as your receipt is verified, $DROP tokens are minted and sent to your wallet.</p></div>
                         </div>
                     </div>
-                    <div>
-                        <img src="https://placehold.co/600x500/8A2BE2/00B4DB?text=Receipt+Verification+UI" alt="Receipt Verification UI" class="rounded-2xl shadow-2xl shadow-purple-500/20">
-                    </div>
+                    <div><img src="https://placehold.co/600x500/8A2BE2/00B4DB?text=Receipt+Verification+UI" alt="Receipt Verification UI" class="rounded-2xl shadow-2xl shadow-purple-500/20"></div>
                 </div>
             </div>
         </section>
-
-        <!-- Rewards Section -->
         <section id="rewards" class="py-20">
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-4xl font-bold mb-4">Burn Tokens. Claim Rewards.</h2>
@@ -226,7 +232,7 @@
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2">$25 Amazon Gift Card</h3>
                             <p class="text-gray-400 mb-4">The everything store, at your fingertips.</p>
-                            <button class="w-full secondary-gradient text-white font-bold py-3 rounded-lg">Burn 2500 $DROP</button>
+                            <button class="burn-btn w-full secondary-gradient text-white font-bold py-3 rounded-lg" data-cost="2500" data-reward="$25 Amazon Gift Card">Burn 2500 $DROP</button>
                         </div>
                     </div>
                     <!-- Reward Card 2 -->
@@ -235,7 +241,7 @@
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2">Limited Edition NFT</h3>
                             <p class="text-gray-400 mb-4">A unique, collectible digital asset for our top earners.</p>
-                            <button class="w-full secondary-gradient text-white font-bold py-3 rounded-lg">Burn 10000 $DROP</button>
+                            <button class="burn-btn w-full secondary-gradient text-white font-bold py-3 rounded-lg" data-cost="10000" data-reward="Limited Edition NFT">Burn 10000 $DROP</button>
                         </div>
                     </div>
                     <!-- Reward Card 3 -->
@@ -244,7 +250,7 @@
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2">$10 Starbucks Credit</h3>
                             <p class="text-gray-400 mb-4">Fuel your day with your favorite coffee.</p>
-                            <button class="w-full secondary-gradient text-white font-bold py-3 rounded-lg">Burn 1000 $DROP</button>
+                            <button class="burn-btn w-full secondary-gradient text-white font-bold py-3 rounded-lg" data-cost="1000" data-reward="$10 Starbucks Credit">Burn 1000 $DROP</button>
                         </div>
                     </div>
                 </div>
@@ -255,9 +261,7 @@
     <!-- Footer -->
     <footer class="bg-gray-900/50 border-t border-gray-800 py-12">
         <div class="container mx-auto px-6 text-center text-gray-400">
-            <h3 class="text-2xl font-bold text-white mb-2">
-                 <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">Dropify</span>
-            </h3>
+            <h3 class="text-2xl font-bold text-white mb-2"><span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">Dropify</span></h3>
             <p class="mb-6">Turning everyday spending into future value.</p>
             <div class="flex justify-center space-x-6 mb-6">
                 <a href="#" class="hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.3 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a>
@@ -268,130 +272,457 @@
         </div>
     </footer>
 
-    <!-- Connection Modal -->
-    <div id="connect-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg">
+    <!-- Email Sign-in Modal -->
+    <div id="email-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg">
         <div class="card-bg rounded-2xl p-8 max-w-sm w-full m-4 relative">
-            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+            <button id="close-email-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-            <h3 class="text-2xl font-bold text-center mb-6">Connect to Dropify</h3>
+            <h3 class="text-2xl font-bold text-center mb-6">Sign in with Email</h3>
             <div class="space-y-4">
-                 <button class="w-full secondary-gradient text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"></path></svg>
-                    WalletConnect
-                </button>
-                 <button class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-3 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    Sign in with Email
-                </button>
+                <input id="email-input" type="email" placeholder="you@example.com" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                <button id="submit-email-btn" class="w-full secondary-gradient text-white font-bold py-3 px-6 rounded-lg">Sign In / Register</button>
+            </div>
+            <p id="email-message" class="text-sm text-cyan-400 mt-4 text-center"></p>
+        </div>
+    </div>
+
+    <!-- Burn Confirmation Modal -->
+    <div id="burn-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg">
+        <div class="card-bg rounded-2xl p-8 max-w-sm w-full m-4 relative">
+            <button id="close-burn-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div id="burn-confirmation-view">
+                <h3 class="text-2xl font-bold text-center mb-2">Confirm Action</h3>
+                <p class="text-center text-gray-300 mb-6">You are about to burn <strong id="burn-amount" class="text-cyan-400"></strong> to claim the <strong id="burn-reward-name" class="text-cyan-400"></strong>.</p>
+                <div class="space-y-4">
+                    <button id="confirm-burn-btn" class="w-full btn-gradient text-white font-bold py-3 px-6 rounded-lg">Confirm & Burn</button>
+                    <button id="cancel-burn-btn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg">Cancel</button>
+                </div>
+            </div>
+             <div id="burn-success-view" class="hidden text-center">
+                <h3 class="text-2xl font-bold text-cyan-400 mb-4">Success!</h3>
+                <p class="text-gray-300 mb-6">You've successfully claimed your reward. Check your account for details.</p>
+                <button id="close-burn-success-btn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg">Close</button>
             </div>
         </div>
     </div>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Element Selectors ---
-            const connectModal = document.getElementById('connect-modal');
-            const closeModalBtn = document.getElementById('close-modal-btn');
-            const connectWalletHeaderBtn = document.getElementById('connect-wallet-btn-header');
-            const getStartedBtn = document.getElementById('get-started-btn');
-            const connectWalletMainBtn = document.getElementById('connect-wallet-btn-main');
-            const connectEmailMainBtn = document.getElementById('connect-email-btn-main');
-            const appSection = document.getElementById('app');
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBx87KsruuUjygDZvqo75frNv1BdW2n8Vo",
+            authDomain: "dropify-2395e.firebaseapp.com",
+            projectId: "dropify-2395e",
+            storageBucket: "dropify-2395e.appspot.com",
+            messagingSenderId: "976097222115",
+            appId: "1:976097222115:web:f22e1873d911b7f8c614d6",
+            measurementId: "G-PN2M61SGCQ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
+
+        // --- Main App Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- State Variables ---
+            let web3Modal;
+            let web3Provider;
+            let selectedAccount;
+            let currentUser = null;
+            let dropifyContract;
+
+            // --- Supra Testnet Configuration ---
+            const contractAddress = "0xcc4cd134a11dae5f2d89be3ede86a6675ccb9db6f03476de769260652646341f";
+            const chainId = 6;
+            const rpcUrl = "https://rpc-testnet.supra.com";
+            const blockExplorer = "https://testnet.suprascan.io";
+
+            // --- IMPORTANT: PASTE YOUR CONTRACT ABI HERE ---
+            const contractABI = [
+                // Example ABI - Replace with your actual ABI
+                {
+                    "constant": false,
+                    "inputs": [
+                        { "name": "to", "type": "address" },
+                        { "name": "amount", "type": "uint256" }
+                    ],
+                    "name": "mint",
+                    "outputs": [],
+                    "payable": false,
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "constant": false,
+                    "inputs": [
+                        { "name": "amount", "type": "uint256" }
+                    ],
+                    "name": "burn",
+                    "outputs": [],
+                    "payable": false,
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "constant": true,
+                    "inputs": [{"name": "owner", "type": "address"}],
+                    "name": "balanceOf",
+                    "outputs": [{"name": "", "type": "uint256"}],
+                    "payable": false,
+                    "stateMutability": "view",
+                    "type": "function"
+                }
+            ];
+
+
+            // --- DOM Element Selectors ---
             const onboardingSection = document.getElementById('onboarding');
+            const connectView = document.getElementById('connect-view');
+            const welcomeBackView = document.getElementById('welcome-back-view');
+            const continueBtn = document.getElementById('continue-btn');
+
             const uploadSection = document.getElementById('upload-section');
             const processingSection = document.getElementById('processing-section');
+            const processingTitle = document.getElementById('processing-title');
+            const processingText = document.getElementById('processing-text');
             const resultsSection = document.getElementById('results-section');
             const receiptUploadInput = document.getElementById('receipt-upload');
             const scanAnotherBtn = document.getElementById('scan-another-btn');
+            const explorerLink = document.getElementById('explorer-link');
             
-            // --- Modal Logic ---
-            const openModal = () => connectModal.classList.remove('hidden');
-            const closeModal = () => connectModal.classList.add('hidden');
+            const getStartedBtn = document.getElementById('get-started-btn');
+            const appSection = document.getElementById('app');
 
-            [connectWalletHeaderBtn, getStartedBtn, connectWalletMainBtn, connectEmailMainBtn].forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    // For demo, any connect button will "log in" the user
-                    // In a real app, this would trigger WalletConnect or an email auth flow
-                    if (btn === getStartedBtn) {
-                        appSection.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        // Simulate connection
-                        showUploadState();
-                    }
-                });
-            });
+            // Header elements
+            const headerConnectSection = document.getElementById('header-connect-section');
+            const headerUserSection = document.getElementById('header-user-section');
+            const userIdentifier = document.getElementById('user-identifier');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            
+            // Onboarding buttons
+            const connectWalletBtnHeader = document.getElementById('connect-wallet-btn-header');
+            const connectWalletBtnMain = document.getElementById('connect-wallet-btn-main');
+            const connectEmailBtnMain = document.getElementById('connect-email-btn-main');
 
-            // This is just for the modal example, not tied to the main flow
-            const modalButtons = connectModal.querySelectorAll('button');
-            modalButtons.forEach(btn => btn.addEventListener('click', closeModal));
-            closeModalBtn.addEventListener('click', closeModal);
-            connectModal.addEventListener('click', (e) => {
-                if (e.target === connectModal) closeModal();
-            });
+            // Email Modal elements
+            const emailModal = document.getElementById('email-modal');
+            const closeEmailModalBtn = document.getElementById('close-email-modal-btn');
+            const emailInput = document.getElementById('email-input');
+            const submitEmailBtn = document.getElementById('submit-email-btn');
+            const emailMessage = document.getElementById('email-message');
 
-            // --- App State Logic ---
+            // Burn Modal elements
+            const burnModal = document.getElementById('burn-modal');
+            const closeBurnModalBtn = document.getElementById('close-burn-modal-btn');
+            const burnConfirmationView = document.getElementById('burn-confirmation-view');
+            const burnSuccessView = document.getElementById('burn-success-view');
+            const burnAmountEl = document.getElementById('burn-amount');
+            const burnRewardNameEl = document.getElementById('burn-reward-name');
+            const confirmBurnBtn = document.getElementById('confirm-burn-btn');
+            const cancelBurnBtn = document.getElementById('cancel-burn-btn');
+            const closeBurnSuccessBtn = document.getElementById('close-burn-success-btn');
+
+
+            // --- UI State Functions ---
             const showOnboardingState = () => {
                 onboardingSection.classList.remove('hidden');
+                connectView.classList.remove('hidden');
+                welcomeBackView.classList.add('hidden');
                 uploadSection.classList.add('hidden');
                 processingSection.classList.add('hidden');
                 resultsSection.classList.add('hidden');
+                headerConnectSection.classList.remove('hidden');
+                headerUserSection.classList.add('hidden');
+            };
+
+            const showWelcomeBackState = (identifier) => {
+                onboardingSection.classList.remove('hidden');
+                connectView.classList.add('hidden');
+                welcomeBackView.classList.remove('hidden');
+                uploadSection.classList.add('hidden');
+                updateHeader(identifier);
             };
             
-            const showUploadState = () => {
+            const showUploadState = (identifier) => {
                 onboardingSection.classList.add('hidden');
                 uploadSection.classList.remove('hidden');
                 processingSection.classList.add('hidden');
                 resultsSection.classList.add('hidden');
+                updateHeader(identifier);
             };
             
-            const showProcessingState = () => {
-                onboardingSection.classList.add('hidden');
+            const showProcessingState = (title, text) => {
                 uploadSection.classList.add('hidden');
-                processingSection.classList.remove('hidden');
                 resultsSection.classList.add('hidden');
+                onboardingSection.classList.add('hidden');
+                processingSection.classList.remove('hidden');
+                processingTitle.textContent = title;
+                processingText.textContent = text;
             };
 
-            const showResultsState = () => {
-                onboardingSection.classList.add('hidden');
-                uploadSection.classList.add('hidden');
+            const showResultsState = (txHash) => {
                 processingSection.classList.add('hidden');
                 resultsSection.classList.remove('hidden');
+                if (txHash) {
+                    explorerLink.href = `${blockExplorer}/tx/${txHash}`;
+                    explorerLink.style.display = 'inline';
+                } else {
+                    explorerLink.style.display = 'none';
+                }
             };
 
-            // --- Event Listeners ---
-            receiptUploadInput.addEventListener('change', () => {
-                if (receiptUploadInput.files.length > 0) {
-                    showProcessingState();
-                    // Simulate API call for verification and minting
-                    setTimeout(() => {
-                        showResultsState();
-                    }, 3000); // 3-second delay
+            const updateHeader = (identifier) => {
+                 headerConnectSection.classList.add('hidden');
+                headerUserSection.classList.remove('hidden');
+                headerUserSection.classList.add('md:flex');
+                
+                if (identifier && identifier.startsWith('0x')) {
+                    userIdentifier.textContent = `${identifier.substring(0, 6)}...${identifier.substring(identifier.length - 4)}`;
+                } else {
+                    userIdentifier.textContent = identifier;
+                }
+            }
+
+            // --- Web3Modal Initialization ---
+            const init = () => {
+                const providerOptions = {
+                    walletconnect: {
+                        package: window.WalletConnectProvider.default,
+                        options: {
+                            rpc: {
+                                [chainId]: rpcUrl
+                            },
+                            chainId: chainId
+                        }
+                    }
+                };
+
+                web3Modal = new window.Web3Modal.default({
+                    cacheProvider: true,
+                    providerOptions,
+                    disableInjectedProvider: false,
+                });
+            };
+
+            // --- Wallet Connection Logic ---
+            async function connectWallet() {
+                try {
+                    const instance = await web3Modal.connect();
+                    web3Provider = new Web3(instance);
+                    const accounts = await web3Provider.eth.getAccounts();
+                    selectedAccount = accounts[0];
+                    currentUser = selectedAccount;
+
+                    // Initialize contract instance
+                    dropifyContract = new web3Provider.eth.Contract(contractABI, contractAddress);
+
+                    showUploadState(selectedAccount);
+
+                    instance.on("accountsChanged", (accounts) => {
+                        if (accounts.length > 0) {
+                            selectedAccount = accounts[0];
+                            currentUser = selectedAccount;
+                            showUploadState(selectedAccount);
+                        } else {
+                            onDisconnect();
+                        }
+                    });
+                } catch (e) {
+                    console.error("Could not get a wallet connection", e);
+                }
+            }
+
+            // --- Disconnect Logic ---
+            async function onDisconnect() {
+                if (web3Provider && web3Provider.currentProvider && web3Provider.currentProvider.close) {
+                    await web3Provider.currentProvider.close();
+                }
+                if(web3Modal) {
+                    await web3Modal.clearCachedProvider();
+                }
+                selectedAccount = null;
+                await signOut(auth);
+                currentUser = null;
+                showOnboardingState();
+            }
+
+            // --- Email Onboarding Logic ---
+            const openEmailModal = () => emailModal.classList.remove('hidden');
+            const closeEmailModal = () => emailModal.classList.add('hidden');
+
+            async function handleEmailSignIn() {
+                const email = emailInput.value;
+                const password = "defaultPassword123";
+                if (!email) {
+                    emailMessage.textContent = "Please enter a valid email.";
+                    return;
+                }
+                emailMessage.textContent = "Processing...";
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                        try {
+                            await createUserWithEmailAndPassword(auth, email, password);
+                        } catch (createError) {
+                            emailMessage.textContent = `Error: ${createError.message}`;
+                        }
+                    } else {
+                        emailMessage.textContent = `Error: ${error.message}`;
+                    }
+                }
+            }
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    closeEmailModal();
+                    showWelcomeBackState(user.email);
+                } else {
+                    currentUser = null;
+                    showOnboardingState();
                 }
             });
 
+            // --- MINT & BURN LOGIC ---
+
+            async function handleFileUpload() {
+                if (receiptUploadInput.files.length > 0) {
+                    showProcessingState("Processing Receipt...", "Scanning items and verifying authenticity...");
+                    
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    await mintTokens(142.78);
+                }
+            }
+
+            async function mintTokens(amount) {
+                if (!selectedAccount) {
+                    alert("Please connect your wallet first to mint tokens.");
+                    showOnboardingState();
+                    return;
+                }
+                showProcessingState("Minting Tokens...", "Please confirm the transaction in your wallet.");
+                
+                try {
+                    // Convert amount to the smallest unit (assuming 18 decimals for the token)
+                    const amountInWei = web3Provider.utils.toWei(amount.toString(), 'ether');
+                    
+                    const tx = await dropifyContract.methods.mint(selectedAccount, amountInWei).send({ from: selectedAccount });
+                    console.log("Mint transaction successful:", tx);
+                    showResultsState(tx.transactionHash);
+
+                } catch (error) {
+                    console.error("Minting failed:", error);
+                    alert("Minting transaction failed. Check the console for details.");
+                    showUploadState(selectedAccount);
+                }
+            }
+
+            function openBurnModal(cost, reward) {
+                if (!selectedAccount) {
+                    alert("Please connect your wallet to burn tokens.");
+                    return;
+                }
+                burnAmountEl.textContent = `${cost} $DROP`;
+                burnRewardNameEl.textContent = reward;
+                burnModal.classList.remove('hidden');
+                burnConfirmationView.classList.remove('hidden');
+                burnSuccessView.classList.add('hidden');
+
+                confirmBurnBtn.onclick = () => handleBurn(cost);
+            }
+
+            function closeBurnModal() {
+                burnModal.classList.add('hidden');
+            }
+
+            async function handleBurn(cost) {
+                showProcessingState("Burning Tokens...", "Please confirm the transaction in your wallet.");
+                closeBurnModal();
+
+                try {
+                    const costInWei = web3Provider.utils.toWei(cost.toString(), 'ether');
+                    const tx = await dropifyContract.methods.burn(costInWei).send({ from: selectedAccount });
+                    
+                    console.log(`Burn transaction successful:`, tx);
+                    
+                    burnModal.classList.remove('hidden');
+                    burnConfirmationView.classList.add('hidden');
+                    burnSuccessView.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        closeBurnModal();
+                        showUploadState(selectedAccount);
+                    }, 3000);
+
+                } catch (error) {
+                    console.error("Burn failed:", error);
+                    alert("Burn transaction failed. Check the console for details.");
+                    showUploadState(selectedAccount);
+                }
+            }
+
+
+            // --- Event Listeners ---
+            getStartedBtn.addEventListener('click', () => appSection.scrollIntoView({ behavior: 'smooth' }));
+            connectWalletBtnHeader.addEventListener('click', connectWallet);
+            connectWalletBtnMain.addEventListener('click', connectWallet);
+            disconnectBtn.addEventListener('click', onDisconnect);
+            
+            connectEmailBtnMain.addEventListener('click', openEmailModal);
+            closeEmailModalBtn.addEventListener('click', closeEmailModal);
+            submitEmailBtn.addEventListener('click', handleEmailSignIn);
+            emailModal.addEventListener('click', (e) => {
+                if (e.target === emailModal) closeEmailModal();
+            });
+
+            continueBtn.addEventListener('click', () => {
+                if(currentUser) {
+                    showUploadState(currentUser.email || selectedAccount);
+                }
+            });
+
+            receiptUploadInput.addEventListener('change', handleFileUpload);
+
             scanAnotherBtn.addEventListener('click', () => {
-                receiptUploadInput.value = ''; // Reset file input
-                showUploadState();
+                receiptUploadInput.value = '';
+                showUploadState(currentUser.email || selectedAccount);
+            });
+
+            document.querySelectorAll('.burn-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const cost = btn.dataset.cost;
+                    const reward = btn.dataset.reward;
+                    openBurnModal(cost, reward);
+                });
             });
             
-            // Smooth scrolling for nav links
+            cancelBurnBtn.addEventListener('click', closeBurnModal);
+            closeBurnModalBtn.addEventListener('click', closeBurnModal);
+            closeBurnSuccessBtn.addEventListener('click', closeBurnModal);
+            
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
-                    const targetId = this.getAttribute('href');
-                    const targetElement = document.querySelector(targetId);
-                    if(targetElement) {
-                        targetElement.scrollIntoView({
-                            behavior: 'smooth'
-                        });
-                    }
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
                 });
             });
 
+            // --- Initialize App ---
+            init();
         });
     </script>
 </body>
