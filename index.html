@@ -1,276 +1,507 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropify - Airdrops & Digital Rewards Reimagined</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- React & Babel for JSX -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Privy React SDK -->
-    <script src="https://unpkg.com/@privy-io/react-auth@1.58.3/dist/index.umd.js"></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dropify - Airdrops & Digital Rewards Reimagined</title>
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0A0A1A;
-            color: #E0E0E0;
-        }
-        .hero-gradient {
-            background: radial-gradient(ellipse at top, rgba(37, 117, 252, 0.2), transparent 60%), radial-gradient(ellipse at bottom, rgba(106, 17, 203, 0.2), transparent 70%);
-        }
-        .btn-primary {
-            background: linear-gradient(90deg, #2575FC 0%, #6A11CB 100%);
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0px 8px 15px rgba(37, 117, 252, 0.3);
-        }
-        .token-card, .wallet-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .token-card:hover {
-            transform: scale(1.03);
-            box-shadow: 0 0 20px rgba(37, 117, 252, 0.4);
-        }
-        .wallet-card {
-            background: linear-gradient(135deg, rgba(37, 117, 252, 0.1), rgba(106, 17, 203, 0.1));
-        }
-        @keyframes mint {
-            from { opacity: 0; transform: scale(0.8) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .mint-animation { animation: mint 0.5s ease-out forwards; }
-        @keyframes burn {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0; transform: scale(0.7) rotate(15deg); }
-        }
-        .burn-animation { animation: burn 0.5s ease-in forwards; }
-        .notification {
-            position: fixed; bottom: 20px; left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px; border-radius: 8px;
-            color: white; z-index: 100; opacity: 0;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-        .notification.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-20px);
-        }
-    </style>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- React 18 UMD + ReactDOM 18 UMD + Babel (for inline JSX) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Privy React SDK UMD (global: privy_io) -->
+  <script src="https://unpkg.com/@privy-io/react-auth@1.58.3/dist/index.umd.js"></script>
+
+  <!-- Tesseract.js for OCR -->
+  <script src="https://unpkg.com/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0A0A1A; color: #E0E0E0; }
+    .hero-gradient {
+      background: radial-gradient(ellipse at top, rgba(37, 117, 252, 0.2), transparent 60%),
+                  radial-gradient(ellipse at bottom, rgba(106, 17, 203, 0.2), transparent 70%);
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #2575FC 0%, #6A11CB 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0px 8px 15px rgba(37, 117, 252, 0.3);
+    }
+    .token-card, .wallet-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .token-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 20px rgba(37, 117, 252, 0.4);
+    }
+    .wallet-card { background: linear-gradient(135deg, rgba(37, 117, 252, 0.1), rgba(106, 17, 203, 0.1)); }
+    @keyframes mint { from { opacity: 0; transform: scale(0.8) translateY(20px);} to { opacity:1; transform: scale(1) translateY(0);} }
+    .mint-animation { animation: mint 0.5s ease-out forwards; }
+    @keyframes burn { from { opacity:1; transform: scale(1);} to { opacity:0; transform: scale(0.7) rotate(15deg);} }
+    .burn-animation { animation: burn 0.5s ease-in forwards; }
+
+    /* Notification */
+    .notification {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px; border-radius: 8px;
+      color: white; z-index: 100; opacity: 0;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .notification.show { opacity: 1; transform: translateX(-50%) translateY(-20px); }
+
+    /* Table */
+    .table th, .table td { padding: 0.75rem; }
+    .table th { background: rgba(255,255,255,0.06); }
+    .table tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-    <div id="notification" class="notification"></div>
+  <div id="root"></div>
+  <div id="notification" class="notification"></div>
 
-    <script type="text/babel">
-        window.onload = function() {
-            if (typeof privy_io === 'undefined') {
-                console.error("Privy SDK failed to load.");
-                document.getElementById('root').innerHTML = '<div style="text-align: center; padding-top: 50px; color: red;">Error: Could not load required libraries. Please refresh.</div>';
-                return;
+  <script type="text/babel">
+    // Mount only after page fully loads to ensure global UMDs are present.
+    window.onload = function() {
+      if (typeof privy_io === 'undefined') {
+        console.error("Privy SDK failed to load.");
+        document.getElementById('root').innerHTML =
+          '<div style="text-align:center;padding-top:50px;color:red;">Error: Required libraries failed to load.</div>';
+        return;
+      }
+
+      const { useState, useEffect, useMemo } = React;
+      const { PrivyProvider, usePrivy } = privy_io;
+
+      // --- Notification helper (DOM-based for simplicity) ---
+      function showNotification(message, type = 'success') {
+        const n = document.getElementById('notification');
+        if (!n) return;
+        n.textContent = message;
+        n.style.background = type === 'success'
+          ? 'linear-gradient(90deg, #2575FC 0%, #6A11CB 100%)'
+          : 'linear-gradient(90deg, #B91C1C 0%, #F87171 100%)';
+        n.classList.add('show');
+        setTimeout(() => n.classList.remove('show'), 3000);
+      }
+
+      // --- Utilities for amounts/tokens ---
+      const toCents = (num) => Math.round(Number(num) * 100);
+      const fromCents = (cents) => (cents / 100).toFixed(2);
+
+      // Earn rule: 1 DRP per $1 spent (floor)
+      const earnTokensForAmount = (amountCents) => Math.floor(amountCents / 100);
+
+      // --- Token Card ---
+      function TokenCard({ id, name, hue, onBurn }) {
+        const svgImage = `
+          <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Token ${name}">
+            <defs>
+              <linearGradient id="grad${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:hsl(${hue}, 70%, 50%); stop-opacity:1" />
+                <stop offset="100%" style="stop-color:hsl(${(hue + 40) % 360}, 70%, 50%); stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="100" height="100" rx="15" fill="url(#grad${id})" />
+            <text x="50" y="55" font-family="Inter, sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="bold">DRP</text>
+          </svg>
+        `;
+        const handleBurn = (e) => {
+          const card = e.target.closest('.token-card');
+          card.classList.add('burn-animation');
+          card.addEventListener('animationend', () => onBurn(id), { once: true });
+        };
+        return (
+          <div className="token-card p-4 flex flex-col items-center text-center mint-animation">
+            <div className="mb-3" dangerouslySetInnerHTML={{ __html: svgImage }}></div>
+            <h3 className="font-bold text-white">{name}</h3>
+            <p className="text-sm text-gray-400 mb-4">Token ID: #{String(id).padStart(4, '0')}</p>
+            <button onClick={handleBurn} aria-label={`Burn ${name}`}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+              Burn for Reward
+            </button>
+          </div>
+        );
+      }
+
+      // --- Receipt OCR + Dashboard ---
+      function Dashboard({ walletAddress, receipts, onAddReceipt, totalBurnRewards, baseReceiptRewards }) {
+        const totalSpentCents = useMemo(
+          () => receipts.reduce((sum, r) => sum + r.amountCents, 0),
+          [receipts]
+        );
+        const totalReceiptTokens = useMemo(
+          () => receipts.reduce((sum, r) => sum + r.tokensEarned, 0),
+          [receipts]
+        );
+        const grandRewards = baseReceiptRewards + totalBurnRewards;
+
+        return (
+          <section id="dashboard" className="py-12">
+            <div className="container mx-auto px-6 max-w-5xl">
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="wallet-card p-6 text-white md:col-span-1">
+                  <h2 className="text-2xl font-bold mb-2">My Drop Wallet</h2>
+                  <p className="text-sm font-mono bg-black bg-opacity-20 px-3 py-1 rounded-md inline-block mb-4 break-all">{walletAddress || '—'}</p>
+                  <div className="border-t border-blue-400 border-opacity-30 pt-4 space-y-2">
+                    <p className="text-gray-300">Receipts Uploaded: <span className="font-semibold text-white">{receipts.length}</span></p>
+                    <p className="text-gray-300">Total Spent: <span className="font-semibold text-white">${fromCents(totalSpentCents)}</span></p>
+                    <p className="text-gray-300">Tokens from Receipts: <span className="font-semibold text-white">{totalReceiptTokens} DRP</span></p>
+                    <p className="text-gray-300">Mock Burn Rewards: <span className="font-semibold text-white">{totalBurnRewards} DRP</span></p>
+                    <p className="text-gray-300">Total Rewards: <span className="font-bold text-blue-300">{grandRewards.toLocaleString()} DRP</span></p>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-gray-900/50 rounded-2xl border border-gray-700/50 md:col-span-2">
+                  <h3 className="text-xl font-bold text-white mb-4">Upload Receipt (OCR)</h3>
+                  <ReceiptUploader onAddReceipt={onAddReceipt} />
+                </div>
+              </div>
+
+              <div className="mt-8 p-6 bg-gray-900/50 rounded-2xl border border-gray-700/50">
+                <h3 className="text-xl font-bold text-white mb-4">Spending & Rewards</h3>
+                {receipts.length === 0 ? (
+                  <p className="text-gray-400">No receipts yet. Upload one to see parsed details.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="table w-full text-left">
+                      <thead>
+                        <tr>
+                          <th className="rounded-tl-lg">Date</th>
+                          <th>Merchant</th>
+                          <th>Items (parsed)</th>
+                          <th>Amount</th>
+                          <th className="rounded-tr-lg">Tokens</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {receipts.map((r) => (
+                          <tr key={r.id} className="border-b border-gray-800">
+                            <td>{r.date || '—'}</td>
+                            <td>{r.merchant || '—'}</td>
+                            <td className="max-w-[300px] truncate" title={r.items || ''}>{r.items || '—'}</td>
+                            <td>${fromCents(r.amountCents)}</td>
+                            <td>{r.tokensEarned} DRP</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function ReceiptUploader({ onAddReceipt }) {
+        const [busy, setBusy] = useState(false);
+        const [hint, setHint] = useState('');
+
+        const parseReceiptText = (text) => {
+          // Simple heuristics for demo purposes
+          const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+          // Merchant: first non-empty line that isn't a date or total
+          const dateRegex = /\b(20\d{2}|19\d{2})[-/.\s](0?[1-9]|1[0-2])[-/.\s](0?[1-9]|[12]\d|3[01])\b|\b(0?[1-9]|[12]\d|3[01])[-/.\s](0?[1-9]|1[0-2])[-/.\s](20\d{2}|19\d{2})\b/i;
+          const totalRegex = /(grand\s*)?total[:\s]*\$?\s*([0-9]+(?:\.[0-9]{2})?)/i;
+          const altTotalRegex = /\$?\s*([0-9]+(?:\.[0-9]{2})?)\s*(total|amount due)/i;
+
+          let merchant = '';
+          for (let i = 0; i < Math.min(5, lines.length); i++) {
+            const l = lines[i];
+            if (!dateRegex.test(l) && !totalRegex.test(l) && !altTotalRegex.test(l) && l.length > 2) {
+              merchant = l.replace(/[^A-Za-z0-9 &().,/-]/g, '');
+              break;
             }
+          }
 
-            const { useState } = React;
-            const { PrivyProvider, usePrivy } = privy_io;
+          // Date
+          let dateMatch = text.match(dateRegex);
+          let date = dateMatch ? dateMatch[0] : '';
 
-            function showNotification(message, type = 'success') {
-                const notification = document.getElementById('notification');
-                if (!notification) return;
-                notification.textContent = message;
-                notification.style.background = type === 'success' 
-                    ? 'linear-gradient(90deg, #2575FC 0%, #6A11CB 100%)' 
-                    : 'linear-gradient(90deg, #B91C1C 0%, #F87171 100%)';
-                notification.classList.add('show');
-                setTimeout(() => notification.classList.remove('show'), 3000);
-            }
+          // Total
+          let amt = 0;
+          const t1 = text.match(totalRegex);
+          if (t1 && t1[2]) {
+            amt = Number(t1[2]);
+          } else {
+            const t2 = text.match(altTotalRegex);
+            if (t2 && t2[1]) amt = Number(t2[1]);
+          }
 
-            function TokenCard({ id, name, hue, onBurn }) {
-                const svgImage = `
-                    <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="grad${id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:hsl(${hue}, 70%, 50%); stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:hsl(${(hue + 40) % 360}, 70%, 50%); stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <rect x="0" y="0" width="100" height="100" rx="15" fill="url(#grad${id})" />
-                        <text x="50" y="55" font-family="Inter, sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="bold">DRP</text>
-                    </svg>
-                `;
+          // Items (rough: take lines between “Subtotal/Total” boundaries)
+          let items = '';
+          const idxTotal = lines.findIndex(l => /total/i.test(l));
+          if (idxTotal > 0) {
+            items = lines.slice(1, Math.max(1, idxTotal)).slice(0, 10).join(', ');
+          } else {
+            items = lines.slice(1, Math.min(10, lines.length)).join(', ');
+          }
 
-                const handleBurn = (e) => {
-                    const card = e.target.closest('.token-card');
-                    card.classList.add('burn-animation');
-                    card.addEventListener('animationend', () => onBurn(id), { once: true });
-                };
+          return {
+            merchant: merchant || 'Unknown Merchant',
+            date,
+            amountCents: toCents(isFinite(amt) ? amt : 0),
+            items
+          };
+        };
 
-                return (
-                    <div className="token-card p-4 flex flex-col items-center text-center mint-animation">
-                        <div className="mb-3" dangerouslySetInnerHTML={{ __html: svgImage }}></div>
-                        <h3 className="font-bold text-white">{name}</h3>
-                        <p className="text-sm text-gray-400 mb-4">Token ID: #{String(id).padStart(4, '0')}</p>
-                        <button onClick={handleBurn} aria-label={`Burn ${name}`} className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                            Burn for Reward
-                        </button>
+        const handleFile = async (file) => {
+          setBusy(true);
+          setHint('Reading receipt...');
+          try {
+            const { data } = await Tesseract.recognize(file, 'eng', { logger: m => {
+              if (m.status) setHint(`${m.status} ${m.progress ? Math.round(m.progress*100)+'%' : ''}`);
+            }});
+            const parsed = parseReceiptText(data.text || '');
+            const tokensEarned = earnTokensForAmount(parsed.amountCents);
+            const receipt = {
+              id: Date.now(),
+              ...parsed,
+              tokensEarned
+            };
+            onAddReceipt(receipt);
+            showNotification(`✅ Parsed ${parsed.merchant} — +${tokensEarned} DRP`, 'success');
+          } catch (e) {
+            console.error(e);
+            showNotification('❌ OCR failed. You can try a clearer image.', 'error');
+          } finally {
+            setBusy(false);
+            setHint('');
+          }
+        };
+
+        return (
+          <div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <label className="inline-block">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  id="receiptFile"
+                  onChange={(e) => e.target.files && e.target.files[0] && handleFile(e.target.files[0])}
+                />
+                <span className="btn-primary text-white font-semibold px-5 py-2 rounded-lg cursor-pointer inline-block"
+                      onClick={() => document.getElementById('receiptFile').click()}>
+                  {busy ? 'Processing…' : 'Upload Receipt Image'}
+                </span>
+              </label>
+              {hint && <span className="text-sm text-gray-300">{hint}</span>}
+            </div>
+            <p className="text-xs text-gray-400 mt-2">Tip: Use a bright, flat photo. We’ll parse date, merchant, and total to grant DRP (1 DRP per $1).</p>
+          </div>
+        );
+      }
+
+      // --- Main App ---
+      function App() {
+        const { ready, authenticated, user, login, logout } = usePrivy();
+
+        // Token demo state
+        const [tokens, setTokens] = useState([]);
+        const [rewardsFromBurns, setRewardsFromBurns] = useState(0);
+        const [tokenIdCounter, setTokenIdCounter] = useState(0);
+
+        // Receipts state
+        const [receipts, setReceipts] = useState([]);
+
+        // Derived
+        const baseReceiptRewards = useMemo(
+          () => receipts.reduce((sum, r) => sum + r.tokensEarned, 0),
+          [receipts]
+        );
+        const totalRewards = rewardsFromBurns + baseReceiptRewards;
+
+        const tokenNames = ['Cosmic Orb', 'Quantum Key', 'Nebula Shard', 'Void Crystal', 'Starfire Gem', 'Chrono Relic'];
+
+        const handleMint = () => {
+          const newId = tokenIdCounter + 1;
+          const randomName = tokenNames[Math.floor(Math.random() * tokenNames.length)];
+          const randomHue = 200 + Math.floor(Math.random() * 60);
+          setTokenIdCounter(newId);
+          setTokens(prev => [{ id: newId, name: randomName, hue: randomHue }, ...prev]);
+        };
+
+        const handleBurn = (idToBurn) => {
+          setTokens(prev => prev.filter(t => t.id !== idToBurn));
+          const rewardAmount = Math.floor(Math.random() * 91) + 10; // 10–100 DRP mock reward
+          setRewardsFromBurns(prev => prev + rewardAmount);
+          showNotification(`🔥 Burned! You received ${rewardAmount} DRP!`, 'success');
+        };
+
+        const addReceipt = (receipt) => {
+          setReceipts(prev => [receipt, ...prev]);
+        };
+
+        const walletAddress = user?.wallet?.address || '';
+        const displayAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}` : 'Connect';
+
+        return (
+          <div>
+            {/* Header */}
+            <header className="fixed top-0 left-0 right-0 z-50 bg-opacity-30 backdrop-filter backdrop-blur-lg border-b border-gray-800">
+              <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <img src="https://placehold.co/40x40/0A0A1A/FFFFFF?text=D&font=inter" alt="Dropify Logo" className="h-9 w-9" />
+                  <span className="text-2xl font-bold text-white">Dropify</span>
+                </div>
+                <div className="hidden md:flex items-center space-x-8">
+                  <a href="#demo" className="text-gray-300 hover:text-white transition">Demo</a>
+                  <a href="#dashboard" className="text-gray-300 hover:text-white transition">Dashboard</a>
+                  <a href="#features" className="text-gray-300 hover:text-white transition">Features</a>
+                </div>
+                <button
+                  onClick={authenticated ? logout : login}
+                  disabled={!ready}
+                  className="btn-primary text-white font-semibold px-5 py-2 rounded-lg min-w-[150px] disabled:opacity-50"
+                  aria-label="Connect Wallet"
+                >
+                  {ready && authenticated ? displayAddress : 'Connect'}
+                </button>
+              </nav>
+            </header>
+
+            <main className="pt-20">
+              {/* Hero */}
+              <section className="relative text-center py-24 md:py-32 hero-gradient">
+                <div className="container mx-auto px-6">
+                  <h1 className="text-4xl md:text-6xl font-black text-white leading-tight">
+                    Airdrops & Digital Rewards<br />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">Reimagined.</span>
+                  </h1>
+                  <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+                    Engage your community like never before. Dropify makes it simple to mint, airdrop, and create gamified reward systems with digital collectibles.
+                  </p>
+                  <div className="mt-10">
+                    <button onClick={login} disabled={!ready} className="btn-primary text-white font-bold text-lg px-8 py-4 rounded-lg disabled:opacity-50">
+                      Get Started
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              {/* Wallet Summary (when connected) */}
+              {authenticated && (
+                <section className="py-8">
+                  <div className="container mx-auto px-6 max-w-3xl">
+                    <div className="wallet-card p-6 text-white">
+                      <h2 className="text-2xl font-bold mb-2">My Drop Wallet</h2>
+                      <p className="text-sm font-mono bg-black bg-opacity-20 px-3 py-1 rounded-md inline-block mb-4 break-all">{walletAddress}</p>
+                      <div className="border-t border-blue-400 border-opacity-30 pt-4">
+                        <p className="text-gray-300">Total Rewards</p>
+                        <p className="text-4xl font-bold">{totalRewards.toLocaleString()} <span className="text-2xl text-blue-300">$DROP</span></p>
+                      </div>
                     </div>
-                );
-            }
+                  </div>
+                </section>
+              )}
 
-            function App() {
-                const { ready, authenticated, user, login, logout } = usePrivy();
-                const [tokens, setTokens] = useState([]);
-                const [rewards, setRewards] = useState(0);
-                const [tokenIdCounter, setTokenIdCounter] = useState(0);
-
-                const tokenNames = ['Cosmic Orb', 'Quantum Key', 'Nebula Shard', 'Void Crystal', 'Starfire Gem', 'Chrono Relic'];
-
-                const handleMint = () => {
-                    const newId = tokenIdCounter + 1;
-                    const randomName = tokenNames[Math.floor(Math.random() * tokenNames.length)];
-                    const randomHue = 200 + Math.floor(Math.random() * 60);
-                    setTokenIdCounter(newId);
-                    setTokens(prev => [{ id: newId, name: randomName, hue: randomHue }, ...prev]);
-                };
-
-                const handleBurn = (idToBurn) => {
-                    setTokens(prev => prev.filter(t => t.id !== idToBurn));
-                    const rewardAmount = Math.floor(Math.random() * 91) + 10;
-                    setRewards(prev => prev + rewardAmount);
-                    showNotification(`🔥 Burned! You received ${rewardAmount} DRP!`, 'success');
-                };
-
-                const walletAddress = user?.wallet?.address;
-                const displayAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}` : '';
-
-                return (
-                    <div>
-                        <header className="fixed top-0 left-0 right-0 z-50 bg-opacity-30 backdrop-filter backdrop-blur-lg border-b border-gray-800">
-                            <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-                                <div className="flex items-center space-x-3">
-                                    <img src="https://placehold.co/40x40/0A0A1A/FFFFFF?text=D&font=inter" alt="Dropify Logo" className="h-9 w-9" />
-                                    <span className="text-2xl font-bold text-white">Dropify</span>
-                                </div>
-                                <div className="hidden md:flex items-center space-x-8">
-                                    <a href="#demo" className="text-gray-300 hover:text-white transition">Demo</a>
-                                    <a href="#features" className="text-gray-300 hover:text-white transition">Features</a>
-                                    <a href="#" className="text-gray-300 hover:text-white transition">Pitch Deck</a>
-                                </div>
-                                <button 
-                                    onClick={authenticated ? logout : login} 
-                                    disabled={!ready}
-                                    className="btn-primary text-white font-semibold px-5 py-2 rounded-lg min-w-[150px] disabled:opacity-50"
-                                >
-                                    {ready && authenticated ? displayAddress : 'Connect'}
-                                </button>
-                            </nav>
-                        </header>
-
-                        <main className="pt-20">
-                            <section className="relative text-center py-24 md:py-32 hero-gradient">
-                                <div className="container mx-auto px-6">
-                                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-white leading-tight">
-                                        Airdrops & Digital Rewards<br /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">Reimagined.</span>
-                                    </h1>
-                                    <p className="mt-6 text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-                                        Engage your community like never before. Dropify makes it simple to mint, airdrop, and create gamified reward systems with digital collectibles.
-                                    </p>
-                                    <div className="mt-10">
-                                        <button onClick={login} disabled={!ready} className="btn-primary text-white font-bold text-lg px-8 py-4 rounded-lg disabled:opacity-50">
-                                            Get Started
-                                        </button>
-                                    </div>
-                                </div>
-                            </section>
-
-                            {authenticated && (
-                                <section id="wallet" className="py-12">
-                                    <div className="container mx-auto px-6 max-w-2xl">
-                                        <div className="wallet-card p-6 text-white">
-                                            <h2 className="text-2xl font-bold mb-2">My Drop Wallet</h2>
-                                            <p className="text-sm font-mono bg-black bg-opacity-20 px-3 py-1 rounded-md inline-block mb-4 break-all">{walletAddress}</p>
-                                            <div className="border-t border-blue-400 border-opacity-30 pt-4">
-                                                <p className="text-gray-300">Current Balance</p>
-                                                <p className="text-4xl font-bold">{rewards.toLocaleString()} <span className="text-2xl text-blue-300">$DROP</span></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-                            )}
-
-                            <section id="demo" className="py-10 md:py-16">
-                                <div className="container mx-auto px-6">
-                                    <div className="text-center mb-12">
-                                        <h2 className="text-3xl md:text-4xl font-bold text-white">Experience the Mechanism</h2>
-                                        <p className="mt-3 text-gray-400 max-w-xl mx-auto">Click to mint mock tokens. Then, burn them to see the rewards mechanism in action. No real assets involved.</p>
-                                    </div>
-                                    <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center bg-gray-900/50 p-6 rounded-2xl border border-gray-700/50 shadow-lg">
-                                        <button onClick={handleMint} aria-label="Mint a mock token" className="w-full md:w-auto btn-primary text-white font-semibold px-6 py-3 rounded-lg flex items-center justify-center space-x-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                                            <span>Mint a Mock Token</span>
-                                        </button>
-                                        <div className="mt-4 md:mt-0 text-center">
-                                            <p className="text-gray-400">Your Mock Rewards:</p>
-                                            <p className="text-2xl font-bold text-white">{rewards} <span className="text-blue-400">DRP</span></p>
-                                        </div>
-                                    </div>
-                                    <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                        {tokens.map(token => <TokenCard key={token.id} id={token.id} name={token.name} hue={token.hue} onBurn={handleBurn} />)}
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section id="features" className="py-20 bg-gray-900/50">
-                                <div className="container mx-auto px-6 text-center">
-                                    <h2 className="text-3xl font-bold text-white">Onboard Anyone, Seamlessly</h2>
-                                    <p className="mt-3 text-gray-400 max-w-2xl mx-auto">Powered by Privy, users can sign up with an email, social account, or their existing crypto wallet. No seed phrases, no friction.</p>
-                                    <div className="mt-12 grid md:grid-cols-3 gap-8 text-left">
-                                        <div className="p-6 bg-gray-800/50 rounded-lg">
-                                            <h3 className="text-xl font-bold text-white">Email & Social Login</h3>
-                                            <p className="mt-2 text-gray-400">Users can sign up in seconds with familiar web2 methods. An embedded wallet is automatically created for them.</p>
-                                        </div>
-                                        <div className="p-6 bg-gray-800/50 rounded-lg">
-                                            <h3 className="text-xl font-bold text-white">Wallet Connect</h3>
-                                            <p className="mt-2 text-gray-400">Crypto-native users can connect their favorite wallets like MetaMask, Phantom, or Rainbow with one click.</p>
-                                        </div>
-                                        <div className="p-6 bg-gray-800/50 rounded-lg">
-                                            <h3 className="text-xl font-bold text-white">Progressive Onboarding</h3>
-                                            <p className="mt-2 text-gray-400">Start users with a simple login, and let them connect wallets or add 2FA as they become more engaged with your platform.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-                        </main>
-
-                        <footer className="text-center py-10 mt-16 border-t border-gray-800">
-                            <div className="container mx-auto px-6">
-                                <p className="text-gray-500">&copy; 2025 Dropify. All rights reserved.</p>
-                            </div>
-                        </footer>
+              {/* Interactive Demo */}
+              <section id="demo" className="py-10 md:py-16">
+                <div className="container mx-auto px-6">
+                  <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-white">Experience the Mechanism</h2>
+                    <p className="mt-3 text-gray-400 max-w-xl mx-auto">
+                      Click to mint mock tokens. Then, burn them to see the rewards mechanism in action. No real assets involved.
+                    </p>
+                  </div>
+                  <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center bg-gray-900/50 p-6 rounded-2xl border border-gray-700/50 shadow-lg">
+                    <button onClick={handleMint} aria-label="Mint a mock token"
+                      className="w-full md:w-auto btn-primary text-white font-semibold px-6 py-3 rounded-lg flex items-center justify-center space-x-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                      <span>Mint a Mock Token</span>
+                    </button>
+                    <div className="mt-4 md:mt-0 text-center">
+                      <p className="text-gray-400">Your Mock Burn Rewards:</p>
+                      <p className="text-2xl font-bold text-white">{rewardsFromBurns} <span className="text-blue-400">DRP</span></p>
                     </div>
-                );
-            }
+                  </div>
+                  <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {tokens.map(token => <TokenCard key={token.id} id={token.id} name={token.name} hue={token.hue} onBurn={handleBurn} />)}
+                  </div>
+                </div>
+              </section>
 
-            const Root = () => {
-                const privyAppId = 'YOUR_PRIVY_APP_ID';
-                return (
-                    <PrivyProvider
-                        appId={privyAppId}
-                        config={{
-                            loginMethods: ['email', 'wallet', 'google', 'twitter'],
-                            appearance: {
-                                theme: 'dark',
-                                accentColor: '#2575FC',
-                                logo: 'https://placehold.co/200x50/000000/FFFFFF?text=Dropify&font=inter',
-                            },
-                            embeddedWallets: { createOnLogin: 'users-without-wallets
+              {/* Dashboard (wallet + receipts + stats) */}
+              <Dashboard
+                walletAddress={walletAddress}
+                receipts={receipts}
+                onAddReceipt={addReceipt}
+                totalBurnRewards={rewardsFromBurns}
+                baseReceiptRewards={baseReceiptRewards}
+              />
+
+              {/* Features */}
+              <section id="features" className="py-20 bg-gray-900/50">
+                <div className="container mx-auto px-6 text-center">
+                  <h2 className="text-3xl font-bold text-white">Onboard Anyone, Seamlessly</h2>
+                  <p className="mt-3 text-gray-400 max-w-2xl mx-auto">Powered by Privy, users can sign up with an email, social account, or their existing crypto wallet. No seed phrases, no friction.</p>
+                  <div className="mt-12 grid md:grid-cols-3 gap-8 text-left">
+                    <div className="p-6 bg-gray-800/50 rounded-lg">
+                      <h3 className="text-xl font-bold text-white">Email & Social Login</h3>
+                      <p className="mt-2 text-gray-400">Users can sign up in seconds with familiar web2 methods. An embedded wallet is automatically created for them.</p>
+                    </div>
+                    <div className="p-6 bg-gray-800/50 rounded-lg">
+                      <h3 className="text-xl font-bold text-white">Wallet Connect</h3>
+                      <p className="mt-2 text-gray-400">Crypto-native users can connect their favorite wallets like MetaMask, Phantom, or Rainbow with one click.</p>
+                    </div>
+                    <div className="p-6 bg-gray-800/50 rounded-lg">
+                      <h3 className="text-xl font-bold text-white">Progressive Onboarding</h3>
+                      <p className="mt-2 text-gray-400">Start users with a simple login, and let them connect wallets or add 2FA as they become more engaged with your platform.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </main>
+
+            <footer className="text-center py-10 mt-16 border-t border-gray-800">
+              <div className="container mx-auto px-6">
+                <p className="text-gray-500">&copy; 2025 Dropify. All rights reserved.</p>
+              </div>
+            </footer>
+          </div>
+        );
+      }
+
+      // Root with Privy Provider
+      const Root = () => {
+        // !!! IMPORTANT: Replace with your actual Privy App ID !!!
+        const privyAppId = 'cme1443h602dmjs0bks8j3xsq';
+        return (
+          <PrivyProvider
+            appId={privyAppId}
+            config={{
+              loginMethods: ['email', 'wallet', 'google', 'twitter'],
+              appearance: {
+                theme: 'dark',
+                accentColor: '#2575FC',
+                logo: 'https://placehold.co/200x50/000000/FFFFFF?text=Dropify&font=inter',
+              },
+              embeddedWallets: { createOnLogin: 'users-without-wallets' }
+            }}
+          >
+            <App />
+          </PrivyProvider>
+        );
+      };
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
+    }
+  </script>
+</body>
+</html>
